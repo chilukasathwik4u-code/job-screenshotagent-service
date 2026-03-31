@@ -41,7 +41,7 @@ job-screenshot-agent/
 ### 1. Clone & Install
 
 ```bash
-cd job-screenshot-agent
+cd job-screenshotagent-service
 pip install -r requirements.txt
 playwright install
 ```
