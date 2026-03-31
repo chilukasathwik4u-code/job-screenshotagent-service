@@ -15,23 +15,35 @@ ERROR_PATTERNS = {
     "timeout":                  ("TIMEOUT",             "Page took too long to load"),
     "err_ssl":                  ("SSL_ERROR",           "SSL/TLS certificate issue"),
     "ssl":                      ("SSL_ERROR",           "SSL/TLS certificate issue"),
+    "err_cert":                 ("SSL_ERROR",           "SSL certificate error"),
     "err_too_many_redirects":   ("REDIRECT_ERROR",      "Too many redirects"),
+    "err_connection_reset":     ("CONNECTION_RESET",    "Connection was reset by the server"),
+    "err_connection_closed":    ("CONNECTION_CLOSED",   "Connection was closed unexpectedly"),
+    "err_aborted":              ("ABORTED",             "Navigation was aborted"),
+    "err_failed":               ("NETWORK_ERROR",       "Network request failed"),
+    "enotfound":                ("DNS_ERROR",           "Domain not found"),
+    "econnrefused":             ("CONNECTION_REFUSED",  "Connection refused"),
     "404":                      ("NOT_FOUND",           "Page not found (404)"),
     "not found":                ("NOT_FOUND",           "Page not found (404)"),
     "403":                      ("FORBIDDEN",           "Access denied (403)"),
     "forbidden":                ("FORBIDDEN",           "Access denied (403)"),
+    "401":                      ("UNAUTHORIZED",        "Authentication required (401)"),
     "500":                      ("SERVER_ERROR",        "Internal server error (500)"),
+    "502":                      ("BAD_GATEWAY",         "Bad gateway (502)"),
+    "503":                      ("SERVICE_UNAVAILABLE", "Service unavailable (503)"),
     "internal server error":    ("SERVER_ERROR",        "Internal server error (500)"),
 }
 
 
 def classify_error(error_msg):
     """Classify the error into a human-readable category."""
-    msg = str(error_msg).lower()
-    return next(
+    raw = str(error_msg)
+    msg = raw.lower()
+    code, description = next(
         (result for pattern, result in ERROR_PATTERNS.items() if pattern in msg),
-        ("UNKNOWN_ERROR", "An unexpected error occurred")
+        ("UNKNOWN_ERROR", raw)  # Use the raw error as the description if unknown
     )
+    return code, description
 
 
 async def capture_single(browser, url, index):
@@ -81,9 +93,9 @@ async def capture_single(browser, url, index):
             error_file = f"{SCREENSHOT_DIR}/job_{index}_error.png"
             await page.screenshot(path=error_file)
             await page.close()
-            logging.error(f"FAILED [{index}]: {url} | {error_code}: {error_description} (error screenshot saved)")
+            logging.error(f"FAILED [{index}]: {url} | {error_code}: {error_description} | Raw: {e} (error screenshot saved)")
         except Exception:
-            logging.error(f"FAILED [{index}]: {url} | {error_code}: {error_description} (no screenshot possible)")
+            logging.error(f"FAILED [{index}]: {url} | {error_code}: {error_description} | Raw: {e} (no screenshot possible)")
 
         return {
             "url": url,

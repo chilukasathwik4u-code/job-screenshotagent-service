@@ -17,7 +17,7 @@ def read_urls(file_path):
 async def run():
     setup_logger()
 
-    file_path = "/home/chilukasaisathwik/Downloads/option1_job_links.xlsx"
+    file_path = "file_path"
 
     logging.info("Reading Excel file...")
     urls = read_urls(file_path)
